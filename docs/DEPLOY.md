@@ -55,6 +55,8 @@ Alternative : **New → Blueprint** si `render.yaml` est à la racine du repo.
 
 5. **Deploy site**. Tester recherche / connexion.
 
+**Erreur 404 sur `https://votre-site.netlify.app/api/...`** : le front appelle Netlify au lieu de Render. `VITE_API_URL` ne doit **pas** être `/api` en prod — utilisez l’URL complète Render (`https://….onrender.com/api`), puis **Deploys → Trigger deploy**.
+
 ---
 
 ## 3. Admin (optionnel, 2e site Netlify)

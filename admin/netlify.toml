@@ -1,6 +1,6 @@
-# Admin (2e site Netlify) — base directory = admin dans l’UI Netlify
+# Admin — Netlify : base directory = admin + VITE_API_URL=https://xxx.onrender.com/api
 [build]
-  command = "npm ci && npm run build"
+  command = "bash -c 'if [ \"${VITE_API_URL:-/api}\" = \"/api\" ]; then echo \"❌ Définissez VITE_API_URL sur Netlify (URL Render + /api).\"; exit 1; fi' && npm ci && npm run build"
   publish = "dist"
 
 [build.environment]
