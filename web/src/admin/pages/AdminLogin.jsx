@@ -40,8 +40,10 @@ export default function AdminLogin() {
   return (
     <div className="admin-root admin-login">
       <div className="admin-login-card">
-        <h1>adminbino</h1>
-        <p className="tagline">Connexion sécurisée — validation, trajets et utilisateurs</p>
+        <img src="/brand/bino-logo-principal.svg" alt="bino" className="admin-logo-hero" />
+        <span className="admin-login-badge">Espace admin</span>
+        <h1>Connexion administrateur</h1>
+        <p className="tagline">Validation conducteurs, trajets et utilisateurs</p>
         {error && <div className="admin-error">{error}</div>}
         <form onSubmit={submit}>
           <div className="admin-field">

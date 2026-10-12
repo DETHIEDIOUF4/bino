@@ -6,6 +6,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminDrivers from './pages/AdminDrivers';
 import AdminUsers from './pages/AdminUsers';
 import AdminTrips from './pages/AdminTrips';
+import '../theme.css';
 import './admin.css';
 
 export default function AdminRoutes() {

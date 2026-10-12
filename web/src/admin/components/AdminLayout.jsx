@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { clearAdminSession } from '../adminAuthStorage';
 
 export default function AdminLayout({ user }) {
@@ -15,11 +15,13 @@ export default function AdminLayout({ user }) {
     <div className="admin-root admin-layout">
       <aside className="admin-sidebar">
         <div className="admin-brand">
-          <div className="admin-brand-mark">b</div>
-          <div>
-            <h2>bino admin</h2>
-            <p>Plateforme covoiturage</p>
-          </div>
+          <Link
+            to={isAdmin ? '/adminbino/tableau-de-bord' : '/adminbino/conducteurs'}
+            className="admin-brand-link"
+          >
+            <img src="/brand/bino-logo-compact.svg" alt="bino" className="admin-brand-logo" />
+            <span className="admin-brand-caption">Administration</span>
+          </Link>
         </div>
         {user && (
           <div className="admin-user-chip">

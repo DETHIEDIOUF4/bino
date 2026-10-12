@@ -8,6 +8,7 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "seed": "node scripts/seedTestData.js",
+    "create-admin": "node scripts/createGeneralAdmin.js",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev"
   },
