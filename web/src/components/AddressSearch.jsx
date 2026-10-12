@@ -11,14 +11,24 @@ export default function AddressSearch({ label, value, onChange, placeholder }) {
     setQuery(value?.label || '');
   }, [value?.label]);
 
+  const runSearch = async (text) => {
+    const list = await searchPlaces(text);
+    setSuggestions(list);
+    setOpen(list.length > 0);
+  };
+
   const onInput = (text) => {
     setQuery(text);
     clearTimeout(timer.current);
-    timer.current = setTimeout(async () => {
-      const list = await searchPlaces(text);
-      setSuggestions(list);
-      setOpen(list.length > 0);
-    }, 350);
+    if (text.trim().length < 2) {
+      runSearch(text);
+      return;
+    }
+    timer.current = setTimeout(() => runSearch(text), 300);
+  };
+
+  const onFocusInput = () => {
+    runSearch(query);
   };
 
   const pick = async (item) => {
@@ -36,7 +46,7 @@ export default function AddressSearch({ label, value, onChange, placeholder }) {
         value={query}
         onChange={(e) => onInput(e.target.value)}
         placeholder={placeholder}
-        onFocus={() => suggestions.length && setOpen(true)}
+        onFocus={onFocusInput}
         onBlur={() => setTimeout(() => setOpen(false), 200)}
       />
       {open && (
