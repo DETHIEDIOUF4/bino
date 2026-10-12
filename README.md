@@ -8,8 +8,8 @@ Plateforme de covoiturage quotidien de courte distance — partage des frais ent
 |------------|--------------------------------|------------------------------------------|
 | `backend/` | Node.js, Express, PostgreSQL (Prisma) | API REST, WebSockets, notifications      |
 | `mobile/`  | Flutter                        | App iOS/Android (conducteur + passager)  |
-| `admin/`   | React + Vite                   | Administration et validation conducteurs |
-| `web/`     | React + Vite                   | Site public + suivi trajet (marque bino) |
+| `admin/`   | React + Vite                   | Admin legacy (optionnel) |
+| `web/`     | React + Vite                   | Site public bino + **admin `/adminbino`** |
 
 ## Fonctionnalités prévues
 
@@ -94,6 +94,12 @@ Configurer l'URL de l'API dans `lib/core/config/app_config.dart`.
 | GET     | `/api/trips/search`      | Rechercher des trajets   |
 | GET     | `/api/admin/drivers/pending` | Conducteurs en attente |
 | PATCH   | `/api/admin/drivers/:id/verify` | Valider un conducteur |
+
+## Documentation
+
+- [Présentation projet & accès propriétaire](docs/PRESENTATION-PROJET.md)
+- [Déploiement Render / Netlify](docs/DEPLOY.md)
+- [Base de données Neon](docs/DATABASE.md)
 
 ## Licence
 

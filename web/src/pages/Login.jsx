@@ -85,38 +85,7 @@ export default function Login() {
           </p>
         </div>
       </div>
-      <style>{`
-        .auth-page { padding: 48px 20px; display: flex; justify-content: center; }
-        .auth-card { width: min(420px, 100%); }
-        .auth-logo { height: 48px; margin-bottom: 16px; }
-        .auth-card h1 { margin-bottom: 6px; }
-        .muted { color: var(--muted); margin-bottom: 20px; }
-        .info-banner {
-          background: rgba(0, 214, 163, 0.12);
-          color: #007a5c;
-          padding: 10px 12px;
-          border-radius: 10px;
-          margin-bottom: 16px;
-          font-size: 0.9rem;
-          font-weight: 600;
-        }
-        .auth-card form { display: grid; gap: 16px; }
-        .auth-card label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 0.85rem; }
-        .auth-card input {
-          padding: 12px 14px;
-          border: 1px solid var(--border);
-          border-radius: 12px;
-        }
-        .error-banner {
-          background: #fee2e2;
-          color: var(--error);
-          padding: 10px 12px;
-          border-radius: 10px;
-          margin-bottom: 16px;
-          font-size: 0.9rem;
-        }
-        .auth-switch { margin-top: 20px; text-align: center; font-size: 0.9rem; }
-      `}</style>
+      <style>{`.auth-card form { display: grid; gap: 4px; } .auth-card .muted { margin-bottom: 20px; }`}</style>
     </PublicLayout>
   );
 }

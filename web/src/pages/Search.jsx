@@ -109,14 +109,15 @@ export default function Search() {
 
   return (
     <PublicLayout>
-      <div className="container search-page">
-        <h1>Rechercher un trajet</h1>
-        <p className="lead">
-          Départ par défaut à Québec. Tarif suggéré selon la distance — ajustez-le, puis lancez le matching le plus
-          proche.
-        </p>
+      <div className="container page-section">
+        <header className="page-head">
+          <h1>Rechercher un trajet</h1>
+          <p className="page-lead">
+            Départ par défaut à Québec. Tarif suggéré selon la distance — ajustez-le, puis lancez le matching.
+          </p>
+        </header>
 
-        <div className="card search-form">
+        <div className="card card-glow search-form-stack">
           <RouteAddressForm
             departure={departure}
             destination={destination}
@@ -128,17 +129,16 @@ export default function Search() {
 
           {error && <div className="error-banner">{error}</div>}
 
-          <button type="button" className="btn btn-primary" onClick={search} disabled={searching}>
+          <button type="button" className="btn btn-primary btn-block" onClick={search} disabled={searching}>
             {searching ? 'Matching…' : 'Lancer le matching'}
           </button>
         </div>
 
         {openRequestId && (
-          <div className="card success-banner">
-            <h2>Demande envoyée aux conducteurs</h2>
-            <p>
-              Votre trajet sera proposé aux chauffeurs. Dès qu&apos;un conducteur accepte, le trajet s&apos;ouvre au
-              public jusqu&apos;à remplissage des places.
+          <div className="card success-banner" style={{ marginTop: 20 }}>
+            <h2 style={{ fontSize: '1.1rem', marginBottom: 8 }}>Demande envoyée aux conducteurs</h2>
+            <p className="page-lead" style={{ marginBottom: 16 }}>
+              Dès qu&apos;un conducteur accepte, le trajet s&apos;ouvre au public jusqu&apos;à remplissage des places.
             </p>
             {isAuthenticated && (
               <Link to="/app" className="btn btn-outline">
@@ -149,30 +149,35 @@ export default function Search() {
         )}
 
         {searched && !searching && results.length === 0 && !openRequestId && (
-          <div className="card no-match">
-            <h2>Aucun trajet assez proche</h2>
-            <p>
-              Créez une <strong>demande ouverte</strong> : les conducteurs la verront et pourront l&apos;accepter. Le
-              trajet sera ensuite visible par tous les passagers tant qu&apos;il reste des places.
+          <div className="card" style={{ marginTop: 20 }}>
+            <h2 style={{ fontSize: '1.1rem', marginBottom: 8 }}>Aucun trajet assez proche</h2>
+            <p className="page-lead" style={{ marginBottom: 16 }}>
+              Créez une <strong>demande ouverte</strong> : les conducteurs pourront l&apos;accepter et proposer le
+              trajet à tous.
             </p>
-            <button type="button" className="btn btn-primary" onClick={createOpenRequest} disabled={creatingRequest}>
-              {creatingRequest ? 'Envoi…' : isAuthenticated ? 'Proposer ma demande aux conducteurs' : 'Créer un compte et envoyer la demande'}
+            <button type="button" className="btn btn-primary btn-block" onClick={createOpenRequest} disabled={creatingRequest}>
+              {creatingRequest
+                ? 'Envoi…'
+                : isAuthenticated
+                  ? 'Proposer ma demande aux conducteurs'
+                  : 'Créer un compte et envoyer la demande'}
             </button>
           </div>
         )}
 
-        <div className="results">
+        <div className="results-grid" style={{ marginTop: 24 }}>
           {results.map((r) => {
             const trip = r.trip;
             const driver = trip.driver;
             return (
               <div key={trip._id} className="card result-card">
                 <div>
-                  <h3>
+                  <span className="badge badge-match">Match {r.matchPercent}%</span>
+                  <h3 style={{ marginTop: 10, marginBottom: 4 }}>
                     {driver.firstName} {driver.lastName}
                   </h3>
-                  <p className="muted">
-                    ★ {(driver.rating ?? 0).toFixed(1)} · Match {r.matchPercent}% · ~{r.detourKm} km détour
+                  <p className="result-meta">
+                    ★ {(driver.rating ?? 0).toFixed(1)} · ~{r.detourKm} km de détour
                   </p>
                   <p>
                     {trip.departure?.label} → {trip.arrival?.label}
@@ -184,7 +189,7 @@ export default function Search() {
                   disabled={bookingTripId === trip._id}
                   onClick={() => book(r)}
                 >
-                  {isAuthenticated ? `Réserver · ${fare.toFixed(2)}$` : 'Réserver — créer un compte'}
+                  {isAuthenticated ? `Réserver · ${fare.toFixed(2)} $` : 'Réserver — créer un compte'}
                 </button>
               </div>
             );
@@ -192,30 +197,11 @@ export default function Search() {
         </div>
 
         {!isAuthenticated && results.length > 0 && (
-          <p className="auth-hint">
+          <p className="auth-switch">
             Déjà inscrit ? <Link to="/connexion">Connectez-vous</Link>
           </p>
         )}
       </div>
-
-      <style>{`
-        .search-page { padding: 32px 20px 48px; }
-        .search-page h1 { margin-bottom: 6px; }
-        .lead { color: var(--muted); margin-bottom: 20px; max-width: 680px; }
-        .search-form { display: grid; gap: 20px; margin-bottom: 24px; }
-        .error-banner { background: #fee2e2; color: var(--error); padding: 10px; border-radius: 10px; }
-        .no-match, .success-banner { margin-bottom: 20px; }
-        .no-match h2, .success-banner h2 { font-size: 1.1rem; margin-bottom: 8px; }
-        .no-match p, .success-banner p { color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
-        .results { display: grid; gap: 12px; }
-        .result-card { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
-        .result-card h3 { margin-bottom: 4px; }
-        .muted { color: var(--muted); font-size: 0.9rem; }
-        .auth-hint { margin-top: 20px; font-size: 0.9rem; color: var(--muted); }
-        @media (max-width: 640px) {
-          .result-card { flex-direction: column; align-items: stretch; }
-        }
-      `}</style>
     </PublicLayout>
   );
 }

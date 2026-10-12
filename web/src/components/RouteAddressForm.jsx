@@ -139,32 +139,6 @@ export default function RouteAddressForm({
       )}
 
       {children}
-
-      <style>{`
-        .route-form { display: grid; gap: 18px; }
-        .loc-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end; }
-        .geo-btn {
-          border: 1px solid var(--border);
-          background: var(--white);
-          padding: 12px 14px;
-          border-radius: 12px;
-          font-weight: 600;
-          font-size: 0.8rem;
-          white-space: nowrap;
-        }
-        .presets { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 0.85rem; }
-        .preset-btn {
-          border: 1px solid var(--border);
-          background: var(--creme);
-          padding: 6px 10px;
-          border-radius: 999px;
-          font-size: 0.8rem;
-          font-weight: 600;
-        }
-        .fare-label { display: flex; flex-direction: column; gap: 8px; font-weight: 600; }
-        .dist { font-weight: 500; color: var(--muted); font-size: 0.85rem; }
-        .fare-hint { font-size: 0.8rem; color: var(--muted); margin-top: -6px; }
-      `}</style>
     </div>
   );
 }

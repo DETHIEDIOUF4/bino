@@ -61,42 +61,6 @@ export default function AddressSearch({ label, value, onChange, placeholder }) {
           ))}
         </ul>
       )}
-      <style>{`
-        .address-search { position: relative; display: flex; flex-direction: column; gap: 6px; }
-        .address-search label { font-weight: 600; font-size: 0.85rem; }
-        .address-search input {
-          padding: 12px 14px;
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          font-size: 1rem;
-        }
-        .suggestions {
-          list-style: none;
-          position: absolute;
-          top: 100%;
-          left: 0;
-          right: 0;
-          background: var(--white);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          box-shadow: var(--shadow);
-          z-index: 20;
-          max-height: 220px;
-          overflow: auto;
-        }
-        .suggestions button {
-          width: 100%;
-          text-align: left;
-          padding: 10px 12px;
-          border: none;
-          background: transparent;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-        .suggestions button:hover { background: var(--creme); }
-        .suggestions span { font-size: 0.8rem; color: var(--muted); }
-      `}</style>
     </div>
   );
 }
