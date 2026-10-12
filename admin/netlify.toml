@@ -1,0 +1,12 @@
+# Admin (2e site Netlify) — base directory = admin dans l’UI Netlify
+[build]
+  command = "npm ci && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

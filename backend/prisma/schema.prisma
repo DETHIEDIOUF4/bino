@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String    @id @default(cuid())
+  firstName              String
+  lastName               String
+  email                  String    @unique
+  phone                  String
+  password               String
+  profilePhoto           String?
+  role                   String    @default("passenger")
+  isEmailVerified        Boolean   @default(false)
+  isPhoneVerified        Boolean   @default(false)
+  driverLicenseNumber    String?
+  driverLicensePhoto     String?
+  driverStatus           String    @default("none")
+  driverRejectionReason  String?
+  driverVerifiedById     String?
+  driverVerifiedAt       DateTime?
+  vehicle                Json?
+  rating                 Float     @default(0)
+  ratingCount            Int       @default(0)
+  tripCount              Int       @default(0)
+  fcmToken               String?
+  municipalityId         String?
+  isActive               Boolean   @default(true)
+  isSuspended            Boolean   @default(false)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  municipality           Municipality? @relation(fields: [municipalityId], references: [id])
+  driverVerifiedBy       User?         @relation("DriverVerifiedBy", fields: [driverVerifiedById], references: [id])
+  verifiedDrivers        User[]        @relation("DriverVerifiedBy")
+
+  tripsAsDriver          Trip[]        @relation("TripDriver")
+  bookingsAsPassenger    Booking[]     @relation("BookingPassenger")
+  paymentsAsPassenger    Payment[]     @relation("PaymentPassenger")
+  paymentsAsDriver       Payment[]     @relation("PaymentDriver")
+  notifications          Notification[]
+  rideRequests           RideRequest[] @relation("RideRequestPassenger")
+  rideRequestsAsDriver   RideRequest[] @relation("RideRequestDriver")
+  reviewsGiven           Review[]      @relation("ReviewReviewer")
+  reviewsReceived        Review[]      @relation("ReviewReviewee")
+}
+
+model Municipality {
+  id             String   @id @default(cuid())
+  name           String
+  slug           String   @unique
+  primaryColor   String?
+  secondaryColor String?
+  region         String?
+  contactEmail   String?
+  logoUrl        String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  users          User[]
+}
+
+model Trip {
+  id               String    @id @default(cuid())
+  driverId         String
+  departure        Json
+  arrival          Json
+  departureTime    DateTime
+  estimatedArrival DateTime?
+  availableSeats   Int
+  maxWaitMinutes   Int       @default(5)
+  isRecurring      Boolean   @default(false)
+  recurringDays    Int[]     @default([])
+  distanceKm       Float     @default(0)
+  durationMinutes  Int       @default(0)
+  suggestedFare    Float     @default(4)
+  status           String    @default("scheduled")
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  driver           User      @relation("TripDriver", fields: [driverId], references: [id])
+  bookings         Booking[]
+  locations        TripLocation[]
+  notifications    Notification[]
+  rideRequests     RideRequest[]
+  reviews          Review[]
+}
+
+model Booking {
+  id                         String    @id @default(cuid())
+  tripId                     String
+  passengerId                String
+  pickup                     Json
+  dropoff                    Json
+  requestedTime              DateTime
+  timeFlexibilityMinutes     Int       @default(15)
+  fareAmount                 Float
+  suggestedFare              Float?
+  status                     String    @default("pending")
+  detourKm                   Float     @default(0)
+  distanceKm                 Float     @default(0)
+  pickedUpAt                 DateTime?
+  driverMarkedPickupAt       DateTime?
+  passengerConfirmedPickupAt DateTime?
+  publicTrackToken           String    @default(cuid())
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+
+  trip                       Trip      @relation(fields: [tripId], references: [id])
+  passenger                  User      @relation("BookingPassenger", fields: [passengerId], references: [id])
+  payment                    Payment?
+  notifications              Notification[]
+  reviews                    Review[]
+
+  @@index([tripId, passengerId])
+  @@index([publicTrackToken])
+  @@index([passengerId, status])
+}
+
+model Payment {
+  id                    String   @id @default(cuid())
+  bookingId             String   @unique
+  passengerId           String
+  driverId              String
+  amount                Float
+  status                String   @default("pending")
+  stripePaymentIntentId String?
+  stripeTransferId      String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  booking               Booking  @relation(fields: [bookingId], references: [id])
+  passenger             User     @relation("PaymentPassenger", fields: [passengerId], references: [id])
+  driver                User     @relation("PaymentDriver", fields: [driverId], references: [id])
+}
+
+model Notification {
+  id               String   @id @default(cuid())
+  userId           String
+  type             String
+  title            String
+  message          String
+  data             Json     @default("{}")
+  isRead           Boolean  @default(false)
+  relatedTripId    String?
+  relatedBookingId String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User     @relation(fields: [userId], references: [id])
+  relatedTrip      Trip?    @relation(fields: [relatedTripId], references: [id])
+  relatedBooking   Booking? @relation(fields: [relatedBookingId], references: [id])
+
+  @@index([userId, createdAt(sort: Desc)])
+}
+
+model TripLocation {
+  id         String   @id @default(cuid())
+  tripId     String
+  driverId   String
+  lat        Float
+  lng        Float
+  speed      Float?
+  recordedAt DateTime @default(now())
+
+  trip       Trip     @relation(fields: [tripId], references: [id])
+
+  @@index([tripId, recordedAt(sort: Desc)])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  tripId     String
+  bookingId  String
+  reviewerId String
+  revieweeId String
+  rating     Int
+  comment    String?
+  role       String
+  createdAt  DateTime @default(now())
+
+  trip       Trip     @relation(fields: [tripId], references: [id])
+  booking    Booking  @relation(fields: [bookingId], references: [id])
+  reviewer   User     @relation("ReviewReviewer", fields: [reviewerId], references: [id])
+  reviewee   User     @relation("ReviewReviewee", fields: [revieweeId], references: [id])
+}
+
+model RideRequest {
+  id                     String    @id @default(cuid())
+  passengerId            String
+  departure              Json
+  arrival                Json
+  requestedTime          DateTime
+  timeFlexibilityMinutes Int       @default(30)
+  fareAmount             Float
+  status                 String    @default("open")
+  driverId               String?
+  tripId                 String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  passenger              User      @relation("RideRequestPassenger", fields: [passengerId], references: [id])
+  driver                 User?     @relation("RideRequestDriver", fields: [driverId], references: [id])
+  trip                   Trip?     @relation(fields: [tripId], references: [id])
+
+  @@index([status, requestedTime])
+}

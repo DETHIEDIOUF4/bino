@@ -1,0 +1,34 @@
+# Blueprint Render — https://render.com/docs/blueprint-spec
+# Connectez le dépôt GitHub, puis « New > Blueprint » ou créez un Web Service manuellement (rootDir: backend).
+services:
+  - type: web
+    name: aidafall-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci && npx prisma generate
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: WEB_URL
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: MOBILE_URL
+        value: '*'
+      - key: ADMIN_EMAIL
+        value: admin@aidafall.ca
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: PLATFORM_PAYMENTS
+        value: 'true'

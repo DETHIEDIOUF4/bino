@@ -1,0 +1,14 @@
+# Site passager (web) — https://docs.netlify.com/configure-builds/file-based-configuration/
+[build]
+  base = "web"
+  command = "npm ci && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# SPA React Router
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

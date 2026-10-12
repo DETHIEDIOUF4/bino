@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+.pub-cache/
+.dart_tool/
+.packages
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Build outputs
+dist/
+coverage/
+*.jks
+*.keystore
+
+# Flutter
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/ios/Pods/
+mobile/android/.gradle/
+
+# Uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
