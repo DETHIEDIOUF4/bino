@@ -10,13 +10,15 @@
 
 ## 1. Backend sur Render
 
-1. [render.com](https://render.com) → **New** → **Web Service** → repo GitHub.
-2. Paramètres :
-   - **Root Directory** : `backend`
+1. [render.com](https://render.com) → **New** → **Web Service** → repo GitHub (`bino` ou autre).
+2. Paramètres (**monorepo — indispensable**) :
+   - **Root Directory** : `backend` ← sans ça, Render build à la racine et `npm ci` échoue
    - **Runtime** : Node
-   - **Build Command** : `npm ci && npx prisma generate`
+   - **Build Command** : `npm install && npx prisma generate`
    - **Start Command** : `npm start`
    - **Health Check Path** : `/api/health`
+
+   Dans l’UI Render : *Settings → Build & Deploy → Root Directory* = `backend`, puis **Save Changes** et **Manual Deploy**.
 3. **Environment** (copier depuis `backend/.env`, **sans** commiter de secrets) :
 
 | Variable | Exemple |

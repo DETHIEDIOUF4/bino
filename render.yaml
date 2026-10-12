@@ -1,12 +1,11 @@
-# Blueprint Render — https://render.com/docs/blueprint-spec
-# Connectez le dépôt GitHub, puis « New > Blueprint » ou créez un Web Service manuellement (rootDir: backend).
+# Monorepo GitHub : le service DOIT utiliser rootDir backend (équivalent UI « Root Directory » = backend).
 services:
   - type: web
     name: aidafall-api
     runtime: node
     plan: free
     rootDir: backend
-    buildCommand: npm ci && npx prisma generate
+    buildCommand: npm install && npx prisma generate
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
