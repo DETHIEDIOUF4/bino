@@ -5,10 +5,12 @@ const app = require('./app');
 const connectDB = require('./config/db');
 const setupSockets = require('./sockets');
 const seedAdmin = require('./utils/seedAdmin');
+const { assertProductionEnv } = require('./config/envCheck');
 
 const PORT = process.env.PORT || 5000;
 
 const start = async () => {
+  assertProductionEnv();
   await connectDB();
   await seedAdmin();
 

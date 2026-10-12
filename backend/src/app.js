@@ -17,23 +17,28 @@ const publicRoutes = require('./routes/publicRoutes');
 const rideRequestRoutes = require('./routes/rideRequestRoutes');
 const placesRoutes = require('./routes/placesRoutes');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
+const { getCorsOrigins } = require('./config/envCheck');
 
 const app = express();
 
-const corsOrigins = [
-  process.env.CLIENT_URL,
-  process.env.WEB_URL,
-  process.env.MOBILE_URL,
-  ...(process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(',').map((s) => s.trim()).filter(Boolean)
-    : []),
-].filter(Boolean);
+const corsOrigins = getCorsOrigins();
 
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
 app.use(
   cors({
-    origin: corsOrigins.length ? corsOrigins : true,
-    credentials: true,
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      if (!corsOrigins.length) return callback(null, true);
+      const normalized = origin.replace(/\/$/, '');
+      if (corsOrigins.includes(normalized)) return callback(null, true);
+      return callback(null, false);
+    },
+    // Bearer JWT dans Authorization — pas de cookies ; évite conflit avec MOBILE_URL=*
+    credentials: false,
   })
 );
 app.set('trust proxy', 1);

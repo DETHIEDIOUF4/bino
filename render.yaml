@@ -21,8 +21,7 @@ services:
         sync: false
       - key: CLIENT_URL
         sync: false
-      - key: MOBILE_URL
-        value: '*'
+      # Ne pas mettre MOBILE_URL=* ici — anciennes versions l’ajoutaient au CORS et cassaient le web.
       - key: ADMIN_EMAIL
         value: admin@aidafall.ca
       - key: ADMIN_PASSWORD
