@@ -17,10 +17,12 @@ import DriverHome from './pages/DriverHome';
 import DriverTrips from './pages/DriverTrips';
 import DriverRequests from './pages/DriverRequests';
 import Track from './pages/Track';
+import AdminRoutes from './admin/AdminRoutes';
 
 export default function App() {
   return (
     <Routes>
+      <Route path="/adminbino/*" element={<AdminRoutes />} />
       <Route path="/" element={<Landing />} />
       <Route path="/rechercher" element={<Search />} />
       <Route path="/partager-ma-voiture" element={<ShareMyCar />} />
