@@ -373,6 +373,12 @@ textarea {
   }
 }
 
+.role-switch {
+  margin: 8px 0 20px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
 .site-footer {
   margin-top: auto;
   padding: 28px 0 calc(28px + var(--safe-bottom));

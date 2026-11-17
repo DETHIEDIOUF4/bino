@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import RoleSwitch from '../components/RoleSwitch';
 import api from '../services/api';
 import { clearPendingTrip, fulfillPendingTrip, loadPendingTrip } from '../services/pendingTrip';
 
@@ -37,6 +38,7 @@ export default function DriverHome() {
     <div>
       <h1>Espace conducteur</h1>
       <p className="lead">Bonjour {user?.firstName} — gérez vos trajets et les demandes passagers.</p>
+      <RoleSwitch user={user} as="driver" />
 
       <div className={`card status-banner tone-${st.tone}`}>
         <span className={`badge badge-${st.tone === 'active' ? 'active' : 'pending'}`}>{st.label}</span>

@@ -1,6 +1,7 @@
 const prisma = require('../lib/prisma');
 const { BOOKING_STATUS, TRIP_STATUS } = require('../config/constants');
 const { mapBooking, mapTrip, newTrackToken } = require('../utils/mapApi');
+const { tripImpact } = require('../utils/fareCalculator');
 
 const buildTimeline = (booking, trip) => {
   const steps = [
@@ -155,4 +156,30 @@ const getPublicTrack = async (req, res, next) => {
   }
 };
 
-module.exports = { getPublicTrack, ensureTrackToken, buildTimeline };
+const getCommunityImpact = async (req, res, next) => {
+  try {
+    const bookings = await prisma.booking.findMany({
+      where: { status: BOOKING_STATUS.COMPLETED },
+      select: { fareAmount: true, distanceKm: true },
+    });
+    const impacts = bookings.map((b) => tripImpact(b.distanceKm || 0, b.fareAmount || 0));
+    const co2SavedKg = Math.round(impacts.reduce((s, i) => s + i.co2SavedKg, 0) * 100) / 100;
+    const moneySaved = Math.round(impacts.reduce((s, i) => s + i.moneySaved, 0) * 100) / 100;
+    const gratificationPoints = impacts.reduce((s, i) => s + i.gratificationPoints, 0);
+
+    res.json({
+      success: true,
+      data: {
+        completedTrips: bookings.length,
+        co2SavedKg,
+        moneySaved,
+        gratificationPoints,
+        gratificationNote: 'Barème provisoire (points bino) — à confirmer avec l’équipe.',
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { getPublicTrack, ensureTrackToken, buildTimeline, getCommunityImpact };

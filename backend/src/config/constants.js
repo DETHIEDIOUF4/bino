@@ -55,4 +55,9 @@ module.exports = {
     CO2_PER_KM: 0.18,
     SAVINGS_RATE: 0.6,
   },
+
+  PAYMENT_METHOD: {
+    CASH: 'cash',
+    CARD: 'card',
+  },
 };

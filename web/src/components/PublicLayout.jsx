@@ -16,7 +16,8 @@ export default function PublicLayout({ children }) {
     if (isDriverRole(user)) links.push({ to: '/conducteur', label: 'Conducteur' });
     if (isPassengerRole(user)) links.push({ to: '/app', label: 'Espace passager' });
   } else {
-    links.push({ to: '/connexion', label: 'Connexion' });
+    links.push({ to: '/connexion', label: 'Connexion passager' });
+    links.push({ to: '/connexion-conducteur', label: 'Connexion conducteur' });
     links.push({ to: '/inscription', label: 'Créer un compte', className: 'nav-cta' });
   }
 
@@ -35,7 +36,10 @@ export default function PublicLayout({ children }) {
       <main className="public-main">{children}</main>
       <footer className="site-footer">
         <div className="container">
-          <p>bino — covoiturage quotidien · partage des frais · Québec</p>
+          <p>
+            bino — covoiturage quotidien ·{' '}
+            <a href="/confidentialite">Protection des données</a>
+          </p>
         </div>
       </footer>
     </>

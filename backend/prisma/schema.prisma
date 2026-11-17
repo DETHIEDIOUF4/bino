@@ -106,6 +106,7 @@ model Booking {
   status                     String    @default("pending")
   detourKm                   Float     @default(0)
   distanceKm                 Float     @default(0)
+  paymentMethod              String    @default("cash")
   pickedUpAt                 DateTime?
   driverMarkedPickupAt       DateTime?
   passengerConfirmedPickupAt DateTime?

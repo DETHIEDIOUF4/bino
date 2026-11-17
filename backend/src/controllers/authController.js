@@ -21,7 +21,52 @@ const register = async (req, res, next) => {
       where: { email: email.toLowerCase() },
     });
     if (existing) {
-      return res.status(400).json({ success: false, message: 'Courriel déjà utilisé' });
+      const wantsDriver = role === USER_ROLES.DRIVER || role === USER_ROLES.BOTH;
+      const isExistingDriver =
+        existing.role === USER_ROLES.DRIVER || existing.role === USER_ROLES.BOTH;
+      const isExistingPassenger =
+        existing.role === USER_ROLES.PASSENGER || existing.role === USER_ROLES.BOTH;
+
+      if (wantsDriver && isExistingDriver) {
+        return res.status(409).json({
+          success: false,
+          code: 'ACCOUNT_EXISTS_DRIVER',
+          existingRole: existing.role,
+          loginPath: '/connexion-conducteur',
+          message:
+            'Ce courriel a déjà un compte conducteur. Connectez-vous directement — pas besoin de recréer un compte.',
+        });
+      }
+
+      if (wantsDriver && isExistingPassenger) {
+        return res.status(409).json({
+          success: false,
+          code: 'ACCOUNT_EXISTS_PASSENGER',
+          existingRole: existing.role,
+          loginPath: '/connexion',
+          switchPath: '/inscription-conducteur',
+          message:
+            'Ce courriel a déjà un compte passager. Connectez-vous, puis passez en mode conducteur (permis et véhicule).',
+        });
+      }
+
+      if (!wantsDriver && isExistingPassenger) {
+        return res.status(409).json({
+          success: false,
+          code: 'ACCOUNT_EXISTS',
+          existingRole: existing.role,
+          loginPath: '/connexion',
+          message: 'Ce courriel a déjà un compte. Connectez-vous plutôt que de créer un nouveau profil.',
+        });
+      }
+
+      return res.status(409).json({
+        success: false,
+        code: 'ACCOUNT_EXISTS',
+        existingRole: existing.role,
+        loginPath: wantsDriver ? '/connexion-conducteur' : '/connexion',
+        message: 'Courriel déjà utilisé. Connectez-vous avec ce compte.',
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);

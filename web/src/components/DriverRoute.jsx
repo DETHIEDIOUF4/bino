@@ -7,11 +7,11 @@ export default function DriverRoute({ children }) {
   const location = useLocation();
 
   if (!isAuthenticated) {
-    return <Navigate to="/connexion" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/connexion-conducteur" replace state={{ from: location.pathname }} />;
   }
 
   if (!isDriverRole(user)) {
-    return <Navigate to="/partager-ma-voiture" replace />;
+    return <Navigate to="/inscription-conducteur" replace state={{ becomeDriver: true }} />;
   }
 
   return children;

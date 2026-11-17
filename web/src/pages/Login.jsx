@@ -5,21 +5,27 @@ import { useAuth } from '../context/AuthContext';
 import { loadPendingBooking } from '../services/pendingBooking';
 import { loadPendingTrip } from '../services/pendingTrip';
 import { resolvePostAuthDestination } from '../utils/afterAuthNavigation';
-import { homePathForUser } from '../utils/roles';
+import { homePathForUser, isDriverRole, isPassengerRole } from '../utils/roles';
 
-export default function Login() {
+export default function Login({ intent = 'passenger' }) {
   const { login, isAuthenticated, user } = useAuth();
   const pendingBooking = loadPendingBooking();
   const pendingTrip = loadPendingTrip();
-  const pending = pendingBooking || pendingTrip;
+  const isDriverIntent = intent === 'driver';
+  const pending = isDriverIntent ? pendingTrip : pendingBooking;
   const navigate = useNavigate();
   const location = useLocation();
-  const [email, setEmail] = useState('passager.test@aidafall.ca');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  if (isAuthenticated) return <Navigate to={homePathForUser(user) || '/app'} replace />;
+  if (isAuthenticated) {
+    if (isDriverIntent && !isDriverRole(user) && isPassengerRole(user)) {
+      return <Navigate to="/inscription-conducteur" replace />;
+    }
+    return <Navigate to={homePathForUser(user) || '/app'} replace />;
+  }
 
   const submit = async (e) => {
     e.preventDefault();
@@ -27,7 +33,12 @@ export default function Login() {
     setLoading(true);
     try {
       const u = await login(email.trim(), password);
-      const from = location.state?.from || homePathForUser(u);
+      if (isDriverIntent && !isDriverRole(u) && isPassengerRole(u)) {
+        navigate('/inscription-conducteur', { state: { becomeDriver: true, from: '/conducteur' } });
+        return;
+      }
+      const defaultPath = isDriverIntent ? '/conducteur' : '/app';
+      const from = location.state?.from || homePathForUser(u) || defaultPath;
       const { path, error: bookError } = await resolvePostAuthDestination(u, from);
       if (bookError) setError(bookError);
       navigate(path);
@@ -41,15 +52,22 @@ export default function Login() {
   return (
     <PublicLayout>
       <div className="auth-page container">
-        <div className="card auth-card">
+        <div className={`card auth-card ${isDriverIntent ? 'auth-card-driver' : 'auth-card-passenger'}`}>
           <img src="/brand/bino-logo-compact.svg" alt="bino" className="auth-logo" />
-          <h1>Connexion</h1>
-          {pendingTrip ? (
-            <p className="info-banner">Connectez-vous pour publier votre trajet conducteur.</p>
-          ) : pendingBooking ? (
-            <p className="info-banner">Connectez-vous pour finaliser votre réservation.</p>
+          <span className="hero-tag">{isDriverIntent ? 'Espace conducteur' : 'Espace passager'}</span>
+          <h1>{isDriverIntent ? 'Connexion conducteur' : 'Connexion passager'}</h1>
+          {pending ? (
+            <p className="info-banner">
+              {isDriverIntent
+                ? 'Connectez-vous pour publier votre trajet.'
+                : 'Connectez-vous pour finaliser votre réservation.'}
+            </p>
           ) : (
-            <p className="muted">Accédez à vos trajets et au suivi</p>
+            <p className="muted">
+              {isDriverIntent
+                ? 'Publiez des trajets et acceptez des passagers.'
+                : 'Recherchez, réservez et suivez vos trajets.'}
+            </p>
           )}
           {error && <div className="error-banner">{error}</div>}
           <form onSubmit={submit}>
@@ -61,31 +79,33 @@ export default function Login() {
               Mot de passe
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </label>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading
-                ? 'Connexion…'
-                : pendingTrip
-                  ? 'Se connecter et publier'
-                  : pendingBooking
-                    ? 'Se connecter et réserver'
-                    : 'Se connecter'}
+            <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
+              {loading ? 'Connexion…' : 'Se connecter'}
             </button>
           </form>
           <p className="auth-switch">
-            Pas de compte ?{' '}
-            {pendingTrip ? (
-              <Link to="/inscription-conducteur" state={location.state}>
-                Créer un compte conducteur
-              </Link>
+            Pas encore de compte {isDriverIntent ? 'conducteur' : 'passager'} ?{' '}
+            <Link
+              to={isDriverIntent ? '/inscription-conducteur' : '/inscription'}
+              state={location.state}
+            >
+              Créer un compte
+            </Link>
+          </p>
+          <p className="auth-switch">
+            {isDriverIntent ? (
+              <>
+                Vous êtes passager ? <Link to="/connexion">Connexion passager</Link>
+              </>
             ) : (
-              <Link to="/inscription" state={location.state}>
-                Créer un compte
-              </Link>
+              <>
+                Vous conduisez ? <Link to="/connexion-conducteur">Connexion conducteur</Link>
+              </>
             )}
           </p>
         </div>
       </div>
-      <style>{`.auth-card form { display: grid; gap: 4px; } .auth-card .muted { margin-bottom: 20px; }`}</style>
+      <style>{`.auth-card form { display: grid; gap: 4px; } .auth-card .muted { margin-bottom: 20px; } .auth-card-driver { border-top: 4px solid var(--menthe); } .auth-card-passenger { border-top: 4px solid var(--framboise); }`}</style>
     </PublicLayout>
   );
 }

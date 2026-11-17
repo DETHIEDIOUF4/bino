@@ -19,6 +19,7 @@ export default function Register() {
     password: '',
   });
   const [error, setError] = useState('');
+  const [existingAccount, setExistingAccount] = useState(null);
   const [loading, setLoading] = useState(false);
 
   if (isAuthenticated) return <Navigate to={homePathForUser(user)} replace />;
@@ -34,7 +35,9 @@ export default function Register() {
       if (bookError) setError(bookError);
       navigate(path);
     } catch (err) {
-      setError(err.response?.data?.message || 'Erreur');
+      const payload = err.response?.data;
+      setError(payload?.message || 'Erreur');
+      setExistingAccount(payload || null);
     } finally {
       setLoading(false);
     }
@@ -51,10 +54,21 @@ export default function Register() {
             </p>
           ) : (
             <p className="muted">
-              Conducteur ? <Link to="/partager-ma-voiture">Parcours Partager ma voiture</Link>
+              Vous conduisez ?{' '}
+              <Link to="/inscription-conducteur">Créer un compte conducteur</Link> ou{' '}
+              <Link to="/connexion-conducteur">connexion conducteur</Link>.
             </p>
           )}
-          {error && <div className="error-banner">{error}</div>}
+          {error && (
+            <div className="error-banner">
+              {error}
+              {existingAccount?.loginPath && (
+                <p style={{ marginTop: 8 }}>
+                  <Link to={existingAccount.loginPath}>Se connecter</Link>
+                </p>
+              )}
+            </div>
+          )}
           <form onSubmit={submit}>
             <div className="row">
               <label>

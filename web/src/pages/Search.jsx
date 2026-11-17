@@ -20,6 +20,8 @@ export default function Search() {
   const [creatingRequest, setCreatingRequest] = useState(false);
   const [openRequestId, setOpenRequestId] = useState(null);
   const [error, setError] = useState('');
+  const [comparison, setComparison] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('cash');
 
   const search = async () => {
     if (departure?.lat == null || destination?.lat == null) {
@@ -39,9 +41,11 @@ export default function Search() {
           destLng: destination.lng,
           date: new Date().toISOString(),
           timeFlexibility: 30,
+          fare,
         },
       });
       setResults(data.data);
+      setComparison(data.comparison || null);
     } catch (err) {
       setError(err.response?.data?.message || 'Erreur de recherche');
       setResults([]);
@@ -55,6 +59,7 @@ export default function Search() {
     requestedTime: new Date().toISOString(),
     timeFlexibilityMinutes: 30,
     fareAmount: fare,
+    paymentMethod,
   });
 
   const rideRequestPayload = () => ({
@@ -113,7 +118,8 @@ export default function Search() {
         <header className="page-head">
           <h1>Rechercher un trajet</h1>
           <p className="page-lead">
-            Départ par défaut à Québec. Tarif suggéré selon la distance — ajustez-le, puis lancez le matching.
+            Visiteur bienvenu : cherchez sans compte. Pour réserver :{' '}
+            <Link to="/connexion">connexion passager</Link> ou <Link to="/inscription">créer un compte</Link>.
           </p>
         </header>
 
@@ -129,10 +135,51 @@ export default function Search() {
 
           {error && <div className="error-banner">{error}</div>}
 
+          <fieldset className="pay-choice">
+            <legend>Paiement au moment de la réservation</legend>
+            <label>
+              <input
+                type="radio"
+                name="pay"
+                checked={paymentMethod === 'cash'}
+                onChange={() => setPaymentMethod('cash')}
+              />
+              Espèces (au conducteur)
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="pay"
+                checked={paymentMethod === 'card'}
+                onChange={() => setPaymentMethod('card')}
+              />
+              Carte (Stripe)
+            </label>
+          </fieldset>
+
           <button type="button" className="btn btn-primary btn-block" onClick={search} disabled={searching}>
             {searching ? 'Matching…' : 'Lancer le matching'}
           </button>
         </div>
+
+        {comparison && (
+          <div className="card taxi-compare">
+            <h2>bino vs taxi</h2>
+            <p>
+              Contribution proposée : <strong>{Number(comparison.proposedFare).toFixed(2)} $</strong>
+              {' · '}
+              taxi estimé (~{comparison.distanceKm} km) :{' '}
+              <strong>{Number(comparison.taxiEstimate).toFixed(2)} $</strong>
+            </p>
+            <p>
+              Économie : <strong>{Number(comparison.moneySaved).toFixed(2)} $</strong>
+              {' · '}
+              CO₂ évité : <strong>{comparison.co2SavedKg} kg</strong>
+              {' · '}
+              points : <strong>{comparison.gratificationPoints}</strong>
+            </p>
+          </div>
+        )}
 
         {openRequestId && (
           <div className="card success-banner" style={{ marginTop: 20 }}>
@@ -196,12 +243,19 @@ export default function Search() {
           })}
         </div>
 
-        {!isAuthenticated && results.length > 0 && (
+        {!isAuthenticated && (
           <p className="auth-switch">
-            Déjà inscrit ? <Link to="/connexion">Connectez-vous</Link>
+            Compte passager : <Link to="/connexion">connexion</Link> · <Link to="/inscription">créer un compte</Link>
           </p>
         )}
       </div>
+      <style>{`
+        .pay-choice { border: none; display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.9rem; font-weight: 600; }
+        .pay-choice legend { font-weight: 700; margin-bottom: 8px; }
+        .pay-choice label { display: flex; align-items: center; gap: 8px; }
+        .taxi-compare { margin-top: 20px; border-left: 4px solid var(--menthe); }
+        .taxi-compare h2 { font-size: 1.1rem; margin-bottom: 8px; }
+      `}</style>
     </PublicLayout>
   );
 }

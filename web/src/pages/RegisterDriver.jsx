@@ -26,6 +26,7 @@ export default function RegisterDriver() {
     vehicle: { brand: '', model: '', licensePlate: '' },
   });
   const [error, setError] = useState('');
+  const [existingAccount, setExistingAccount] = useState(null);
   const [loading, setLoading] = useState(false);
 
   if (isAuthenticated && isDriverRole(user)) {
@@ -35,6 +36,7 @@ export default function RegisterDriver() {
   const submitNewDriver = async (e) => {
     e.preventDefault();
     setError('');
+    setExistingAccount(null);
     setLoading(true);
     try {
       const u = await registerDriver(form);
@@ -42,7 +44,9 @@ export default function RegisterDriver() {
       if (postError) setError(postError);
       navigate(path);
     } catch (err) {
-      setError(err.response?.data?.message || 'Erreur');
+      const payload = err.response?.data;
+      setError(payload?.message || 'Erreur');
+      setExistingAccount(payload || null);
     } finally {
       setLoading(false);
     }
@@ -87,7 +91,27 @@ export default function RegisterDriver() {
           ) : (
             <p className="muted">Permis et véhicule — validation par un agent avant la première publication.</p>
           )}
-          {error && <div className="error-banner">{error}</div>}
+          {error && (
+            <div className="error-banner">
+              {error}
+              {existingAccount?.loginPath && (
+                <p style={{ marginTop: 8 }}>
+                  <Link to={existingAccount.loginPath} state={{ from: '/conducteur' }}>
+                    Se connecter
+                  </Link>
+                  {existingAccount.code === 'ACCOUNT_EXISTS_PASSENGER' && (
+                    <>
+                      {' '}
+                      puis{' '}
+                      <Link to="/inscription-conducteur" state={{ becomeDriver: true }}>
+                        passer en conducteur
+                      </Link>
+                    </>
+                  )}
+                </p>
+              )}
+            </div>
+          )}
           <form onSubmit={onSubmit}>
             {!becomeDriver && (
               <>
@@ -170,12 +194,21 @@ export default function RegisterDriver() {
             </button>
           </form>
           {!becomeDriver && (
-            <p className="auth-switch">
-              Déjà un compte ?{' '}
-              <Link to="/connexion" state={{ ...location.state, from: '/conducteur' }}>
-                Se connecter
-              </Link>
-            </p>
+            <>
+              <p className="auth-switch">
+                Déjà un compte conducteur ?{' '}
+                <Link to="/connexion-conducteur" state={{ ...location.state, from: '/conducteur' }}>
+                  Se connecter
+                </Link>
+              </p>
+              <p className="auth-switch">
+                Déjà passager ?{' '}
+                <Link to="/connexion" state={{ from: '/inscription-conducteur', becomeDriver: true }}>
+                  Connexion passager
+                </Link>{' '}
+                puis activation conducteur.
+              </p>
+            </>
           )}
         </div>
       </div>

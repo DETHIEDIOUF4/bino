@@ -1,5 +1,5 @@
 const prisma = require('../lib/prisma');
-const { calculateSuggestedFare, haversineKm } = require('../utils/fareCalculator');
+const { calculateSuggestedFare, haversineKm, tripImpact } = require('../utils/fareCalculator');
 const { TRIP_STATUS, BOOKING_STATUS, NOTIFICATION_TYPES } = require('../config/constants');
 const { sendNotification } = require('../services/notificationService');
 const { filterAndRankTrips } = require('../services/matchingService');
@@ -76,8 +76,12 @@ const estimateFare = async (req, res, next) => {
 
     const distanceKm = Math.round(haversineKm(latNum, lngNum, destLatNum, destLngNum) * 100) / 100;
     const suggestedFare = calculateSuggestedFare(distanceKm);
+    const impact = tripImpact(distanceKm, suggestedFare);
 
-    res.json({ success: true, data: { distanceKm, suggestedFare } });
+    res.json({
+      success: true,
+      data: { distanceKm, suggestedFare, ...impact },
+    });
   } catch (error) {
     next(error);
   }
@@ -85,7 +89,7 @@ const estimateFare = async (req, res, next) => {
 
 const searchTrips = async (req, res, next) => {
   try {
-    const { lat, lng, destLat, destLng, date, timeFlexibility = 30 } = req.query;
+    const { lat, lng, destLat, destLng, date, timeFlexibility = 30, fare } = req.query;
 
     if (!lat || !lng || !destLat || !destLng) {
       return res.status(400).json({
@@ -147,7 +151,20 @@ const searchTrips = async (req, res, next) => {
       timeFlexibility: flex,
     });
 
-    res.json({ success: true, data: results });
+    const distanceKm = Math.round(haversineKm(latNum, lngNum, destLatNum, destLngNum) * 100) / 100;
+    const parsedFare = fare != null && fare !== '' ? Number(fare) : NaN;
+    const proposedFare = Number.isNaN(parsedFare) ? calculateSuggestedFare(distanceKm) : parsedFare;
+    const impact = tripImpact(distanceKm, proposedFare);
+
+    res.json({
+      success: true,
+      data: results,
+      comparison: {
+        distanceKm,
+        proposedFare,
+        ...impact,
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -224,7 +241,7 @@ const updateTripStatus = async (req, res, next) => {
 
 const bookTrip = async (req, res, next) => {
   try {
-    const { pickup, dropoff, requestedTime, timeFlexibilityMinutes, fareAmount } = req.body;
+    const { pickup, dropoff, requestedTime, timeFlexibilityMinutes, fareAmount, paymentMethod } = req.body;
     const trip = await prisma.trip.findUnique({
       where: { id: req.params.id },
       include: { driver: true },
@@ -271,6 +288,7 @@ const bookTrip = async (req, res, next) => {
         fareAmount: fareAmount || suggestedFare,
         suggestedFare,
         distanceKm: Math.round(distanceKm * 100) / 100,
+        paymentMethod: paymentMethod === 'card' ? 'card' : 'cash',
         status: BOOKING_STATUS.PENDING,
       },
     });

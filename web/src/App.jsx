@@ -5,7 +5,9 @@ import AppShell from './components/AppShell';
 import DriverShell from './components/DriverShell';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
+import LoginDriver from './pages/LoginDriver';
 import Register from './pages/Register';
+import Privacy from './pages/Privacy';
 import RegisterDriver from './pages/RegisterDriver';
 import ShareMyCar from './pages/ShareMyCar';
 import ProposeTrip from './pages/ProposeTrip';
@@ -28,7 +30,9 @@ export default function App() {
       <Route path="/partager-ma-voiture" element={<ShareMyCar />} />
       <Route path="/proposer" element={<ProposeTrip />} />
       <Route path="/connexion" element={<Login />} />
+      <Route path="/connexion-conducteur" element={<LoginDriver />} />
       <Route path="/inscription" element={<Register />} />
+      <Route path="/confidentialite" element={<Privacy />} />
       <Route path="/inscription-conducteur" element={<RegisterDriver />} />
       <Route path="/suivi/:bookingId/:token" element={<Track />} />
       <Route path="/app/rechercher" element={<Navigate to="/rechercher" replace />} />

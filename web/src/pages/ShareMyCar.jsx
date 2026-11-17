@@ -18,6 +18,9 @@ export default function ShareMyCar() {
           <Link to="/inscription-conducteur" className="btn btn-outline">
             Créer un compte conducteur
           </Link>
+          <Link to="/connexion-conducteur" className="btn btn-outline">
+            Connexion conducteur
+          </Link>
         </div>
       </section>
 

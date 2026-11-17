@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 
-/**
- * Paiement plateforme : actif quand Stripe est configuré côté backend (PLATFORM_PAYMENTS + clés).
- */
-export default function PlatformPayment({ bookingId, fareAmount, bookingStatus }) {
+export default function PlatformPayment({ bookingId, fareAmount, bookingStatus, paymentMethod: initialMethod }) {
   const [config, setConfig] = useState(null);
   const [payment, setPayment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [message, setMessage] = useState('');
+  const [method, setMethod] = useState(initialMethod || 'cash');
 
   const canPay = ['confirmed', 'pickup_pending', 'in_progress'].includes(bookingStatus);
 
@@ -32,9 +30,10 @@ export default function PlatformPayment({ bookingId, fareAmount, bookingStatus }
       const { data } = await api.post('/payments/intent', { bookingId });
       if (data.data?.clientSecret && config?.publishableKey) {
         setMessage(
-          'Paiement Stripe prêt. Intégrez Stripe Elements avec le clientSecret ou testez via l’app mobile. ' +
-            'En attendant, vous pouvez payer le conducteur directement.'
+          'Paiement carte prêt (Stripe). Le module carte Stripe Elements sera finalisé ; en test, utilisez une carte Stripe test.'
         );
+      } else {
+        setMessage('Stripe n’est pas encore configuré sur le serveur. Choisissez espèces ou contactez bino.');
       }
     } catch (err) {
       setMessage(err.response?.data?.message || 'Paiement indisponible');
@@ -57,22 +56,38 @@ export default function PlatformPayment({ bookingId, fareAmount, bookingStatus }
 
       {completed && <p className="ok">Paiement enregistré sur la plateforme.</p>}
 
-      {!completed && platformOn && canPay && (
+      {!completed && (
         <>
-          <p className="hint">Paiement sécurisé Stripe (carte).</p>
-          <button type="button" className="btn btn-primary" disabled={paying} onClick={payOnPlatform}>
-            {paying ? 'Préparation…' : 'Payer sur bino'}
-          </button>
+          <p className="hint">Le passager choisit : espèces au conducteur, ou carte via Stripe.</p>
+          <div className="pay-choice">
+            <label>
+              <input type="radio" name="pm" checked={method === 'cash'} onChange={() => setMethod('cash')} />
+              Espèces
+            </label>
+            <label>
+              <input type="radio" name="pm" checked={method === 'card'} onChange={() => setMethod('card')} />
+              Carte
+            </label>
+          </div>
         </>
       )}
 
-      {!completed && !platformOn && (
-        <p className="hint">
-          Paiement plateforme <strong>non activé</strong> — réglez {fareAmount?.toFixed(2)} $ directement au conducteur.
-          {config?.stripeEnabled === false && (
-            <span> Ajoutez les clés Stripe dans le backend pour activer.</span>
+      {!completed && method === 'cash' && (
+        <p className="hint">Réglez {fareAmount?.toFixed(2)} $ en main propre au conducteur à la prise en charge.</p>
+      )}
+
+      {!completed && method === 'card' && canPay && (
+        <>
+          {platformOn ? (
+            <button type="button" className="btn btn-primary" disabled={paying} onClick={payOnPlatform}>
+              {paying ? 'Préparation…' : 'Payer par carte'}
+            </button>
+          ) : (
+            <p className="hint">
+              Paiement carte bientôt actif (clés Stripe côté serveur). En attendant, utilisez les espèces.
+            </p>
           )}
-        </p>
+        </>
       )}
 
       {message && <p className="msg">{message}</p>}
@@ -82,7 +97,9 @@ export default function PlatformPayment({ bookingId, fareAmount, bookingStatus }
         .payment-block h2 { font-size: 1.1rem; margin-bottom: 10px; }
         .hint { color: var(--muted); font-size: 0.9rem; margin: 10px 0; }
         .ok { color: #007a5c; font-weight: 600; margin: 10px 0; }
-        .msg { font-size: 0.85rem; margin-top: 10px; color: var(--encre); }
+        .msg { font-size: 0.85rem; margin-top: 10px; }
+        .pay-choice { display: flex; gap: 16px; margin: 12px 0; font-weight: 600; }
+        .pay-choice label { display: flex; gap: 8px; align-items: center; }
       `}</style>
     </div>
   );

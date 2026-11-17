@@ -1,6 +1,7 @@
 const prisma = require('../lib/prisma');
 const { stripPassword } = require('../utils/mapApi');
 const { DRIVER_STATUS } = require('../config/constants');
+const { tripImpact } = require('../utils/fareCalculator');
 
 const getMe = async (req, res, next) => {
   try {
@@ -44,6 +45,17 @@ const updateProfile = async (req, res, next) => {
       if ([DRIVER_STATUS.NONE, DRIVER_STATUS.REJECTED].includes(req.user.driverStatus)) {
         data.driverStatus = DRIVER_STATUS.PENDING;
         data.driverRejectionReason = null;
+      }
+    }
+
+    if (req.body.becomePassenger) {
+      if (req.user.role === USER_ROLES.DRIVER) {
+        data.role = USER_ROLES.BOTH;
+      } else if (req.user.role !== USER_ROLES.PASSENGER && req.user.role !== USER_ROLES.BOTH) {
+        return res.status(400).json({
+          success: false,
+          message: 'Seuls les conducteurs peuvent activer l’espace passager',
+        });
       }
     }
 
@@ -106,8 +118,10 @@ const getStats = async (req, res, next) => {
 
     const totalSpent = completedBookings.reduce((sum, b) => sum + (b.fareAmount || 0), 0);
     const totalDistance = completedBookings.reduce((sum, b) => sum + (b.distanceKm || 0), 0);
-    const co2Saved = Math.round(totalDistance * 0.18 * 1000) / 1000;
-    const moneySaved = Math.round(totalSpent * 0.6 * 100) / 100;
+    const impacts = completedBookings.map((b) => tripImpact(b.distanceKm || 0, b.fareAmount || 0));
+    const co2Saved = Math.round(impacts.reduce((s, i) => s + i.co2SavedKg, 0) * 1000) / 1000;
+    const moneySaved = Math.round(impacts.reduce((s, i) => s + i.moneySaved, 0) * 100) / 100;
+    const gratificationPoints = impacts.reduce((s, i) => s + i.gratificationPoints, 0);
 
     res.json({
       success: true,
@@ -119,6 +133,7 @@ const getStats = async (req, res, next) => {
         totalDistance,
         co2SavedKg: co2Saved,
         moneySaved,
+        gratificationPoints,
         rating: req.user.rating,
         ratingCount: req.user.ratingCount,
       },

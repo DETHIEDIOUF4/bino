@@ -126,7 +126,12 @@ export default function BookingDetail() {
         </div>
       </div>
 
-      <PlatformPayment bookingId={id} fareAmount={booking.fareAmount} bookingStatus={booking.status} />
+      <PlatformPayment
+        bookingId={id}
+        fareAmount={booking.fareAmount}
+        bookingStatus={booking.status}
+        paymentMethod={booking.paymentMethod}
+      />
 
       <style>{`
         .booking-detail > a { display: inline-block; margin-bottom: 16px; font-weight: 600; text-decoration: none; }

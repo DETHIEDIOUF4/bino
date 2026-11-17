@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import RoleSwitch from '../components/RoleSwitch';
 
 function pickActive(bookings) {
   const order = ['in_progress', 'pickup_pending', 'confirmed', 'pending'];
@@ -58,6 +59,7 @@ export default function ClientHome() {
       <Link to="/rechercher" className="btn btn-primary cta-search">
         Rechercher un trajet
       </Link>
+      <RoleSwitch user={user} as="passenger" />
 
       {openRequest && (
         <div className="card active-banner waiting">
@@ -98,6 +100,14 @@ export default function ClientHome() {
           <div className="stat-mini">
             <strong>{stats.co2SavedKg ?? 0} kg</strong>
             <span>CO₂ évité</span>
+          </div>
+          <div className="stat-mini">
+            <strong>{stats.moneySaved ?? 0} $</strong>
+            <span>Montant économisé</span>
+          </div>
+          <div className="stat-mini">
+            <strong>{stats.gratificationPoints ?? 0}</strong>
+            <span>Points bino</span>
           </div>
         </div>
       )}
